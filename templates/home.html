@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Uploader</title>
+    <style>
+        h1{
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            height: 20vh; 
+            width: 100%; 
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
+            padding: 20px;
+            border-radius: 8px;
+        }
+        #upload {
+            background-color: green;
+            height: 7vh;
+            border-radius: 8px;
+            border: none;
+            margin-top: 5vh;
+            width: 10vw;
+        }
+        #upload:hover{
+            background-color: lightgreen;
+            cursor: pointer;
+        }
+        #file-list img {
+            max-width: 200px; 
+            max-height: 200px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        #file-list {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px; 
+        justify-content: center;
+        margin-top: 20px;
+    }
+    </style>
+</head>
+<body>
+    <h1>Upload an Image</h1>
+    <form id="upload-form">
+        <input type="file" id="image" name="image" required accept=".jpg, .jpeg, .png"/>
+        <button type="submit" id="upload">Upload</button>
+    </form>
+
+    <h1>Uploaded Files:</h1>
+    <div id="file-list">
+        <!-- Dynamically display uploaded images -->
+    </div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        const fileList = document.getElementById('file-list');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); 
+
+            const formData = new FormData();
+            const imageInput = document.getElementById('image');
+            formData.append('image', imageInput.files[0]);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('File uploaded successfully!');
+                    window.location.reload();
+                } else {
+                    alert(`Error: ${result.error}`);
+                }
+            } catch (error) {
+                console.error('Upload failed:', error);
+                alert('An error occurred during upload.');
+            }
+        });
+
+        async function fetchFiles() {
+            try {
+                const response = await fetch('/files');
+                const data = await response.json();
+
+                if (response.ok) {
+                    fileList.innerHTML = '';
+                    data.files.forEach((file) => {
+                        const img = document.createElement('img');
+                        img.src = file.url;
+                        img.alt = file.name;
+                        img.title = file.name;
+
+                        fileList.appendChild(img);
+                    });
+                } else {
+                    console.error('Failed to fetch files:', data.error);
+                }
+            } catch (error) {
+                console.error('Error fetching files:', error);
+            }
+        }
+
+        fetchFiles();
+    </script>
+</body>
+</html>
