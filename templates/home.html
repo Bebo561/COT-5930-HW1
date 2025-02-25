@@ -46,6 +46,27 @@
         justify-content: center;
         margin-top: 20px;
     }
+    .file-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.file-container h3 {
+    font-size: 1.2rem;
+    margin: 5px 0;
+}
+
+.file-container p {
+    font-size: 1rem;
+    color: #555;
+}
+
     </style>
 </head>
 <body>
@@ -72,7 +93,7 @@
             formData.append('image', imageInput.files[0]);
 
             try {
-                const response = await fetch('/upload', {
+                const response = await fetch('/upload-image', {
                     method: 'POST',
                     body: formData,
                 });
@@ -97,15 +118,35 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    fileList.innerHTML = '';
-                    data.files.forEach((file) => {
-                        const img = document.createElement('img');
-                        img.src = file.url;
-                        img.alt = file.name;
-                        img.title = file.name;
+                   fileList.innerHTML = ''; // Clear previous content
+            
+            data.files.forEach((file) => {
+                // Create container div
+                const fileContainer = document.createElement('div');
+                fileContainer.classList.add('file-container');
 
-                        fileList.appendChild(img);
-                    });
+                // Create image element
+                const img = document.createElement('img');
+                img.src = file.url;
+                img.alt = file.name;
+                img.title = file.name;
+
+                // Create title element
+                const title = document.createElement('h3');
+                title.textContent = file.title || file.name;
+
+                // Create description element
+                const description = document.createElement('p');
+                description.textContent = file.description || "No description available";
+
+                // Append elements to container
+                fileContainer.appendChild(img);
+                fileContainer.appendChild(title);
+                fileContainer.appendChild(description);
+
+                // Append container to file list
+                fileList.appendChild(fileContainer);
+            });
                 } else {
                     console.error('Failed to fetch files:', data.error);
                 }
