@@ -17,7 +17,7 @@ app = Flask(__name__)
 app.secret_key = '89c25124aeaafe4fdcf01a2724187847'  # Change this in production!
 
 # Google Cloud setup
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./key.json"
 bucket_name = os.getenv("BUCKET_NAME")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  
 
@@ -125,6 +125,7 @@ def gallery():
     return jsonify({"files": files})
 
 @app.route('/', methods=["GET"])
+@login_required
 def home():
     return render_template('home.html')
 
