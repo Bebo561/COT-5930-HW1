@@ -81,7 +81,6 @@ def get_image_metadata(image_data):
 def gallery():
     """Returns a JSON list of uploaded images with signed URLs and metadata."""
     query = datastore_client.query(kind='images')
-    query.add_filter('useremail', '=', session['user_email'])
     images = list(query.fetch())
 
     bucket = storage_client.bucket(bucket_name)
@@ -158,9 +157,8 @@ def upload_image():
         # Store in Datastore
         entity = datastore.Entity(key=datastore_client.key('images'))
         entity.update({
-            'useremail': session['user_email'],
             'blob_name': unique_filename,
-            'image_url': image_url,  # Store the URL
+            'image_url': image_url, 
             **metadata,
             'upload_date': datetime.datetime.now()
         })
