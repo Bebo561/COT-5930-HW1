@@ -16,6 +16,9 @@ COPY . /app/
 # List files for debugging
 RUN ls -R /app
 
+# Set environment variables (optional: you can override them at runtime)
+ENV BUCKET_NAME=homework-3-csoto
+
 # Expose the port the app will run on
 EXPOSE 8080
 

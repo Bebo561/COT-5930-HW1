@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify, redirect, url_for, session, flash
+from flask import Flask, request, render_template, jsonify, session, flash
 from werkzeug.utils import secure_filename
 from io import BytesIO
 from google.cloud import storage, datastore
@@ -24,15 +24,6 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 # Initialize Google Cloud clients
 storage_client = storage.Client()
 datastore_client = datastore.Client()
-
-# Authentication middleware
-def login_required(f):
-    def wrapper(*args, **kwargs):
-        if 'user_email' not in session:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    wrapper.__name__ = f.__name__
-    return wrapper
 
 def get_blob_name_from_url(url):
     """Extract blob name from a GCS URL."""
@@ -87,7 +78,6 @@ def get_image_metadata(image_data):
         return {"title": "Untitled Image", "description": "No description available"}
 
 @app.route('/files')
-@login_required
 def gallery():
     """Returns a JSON list of uploaded images with signed URLs and metadata."""
     query = datastore_client.query(kind='images')
@@ -125,60 +115,10 @@ def gallery():
     return jsonify({"files": files})
 
 @app.route('/', methods=["GET"])
-@login_required
 def home():
     return render_template('home.html')
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    """Handles user registration."""
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        print(email, password)
-
-
-        query = datastore_client.query(kind='users')
-        query.add_filter('email', '=', email)
-        if list(query.fetch(limit=1)):
-            flash('Email already exists')
-            return redirect(url_for('signup'))
-
-        entity = datastore.Entity(key=datastore_client.key('users'))
-        entity.update({'email': email, 'password': password})  # Hash passwords in production!
-        datastore_client.put(entity)
-
-        return redirect(url_for('login'))
-
-    return render_template('signUpPage.html')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """Handles user authentication."""
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-
-        query = datastore_client.query(kind='users')
-        query.add_filter(filter=('email', '=', email))
-        query.add_filter('password', '=', password)
-        if list(query.fetch(limit=1)):
-            session['user_email'] = email
-            return redirect(url_for('homepage'))
-
-        flash('Invalid credentials')
-        return redirect(url_for('login'))
-
-    return render_template('loginPage.html')
-
-@app.route('/logout')
-def logout():
-    """Logs out the user."""
-    session.pop('user_email', None)
-    return redirect(url_for('login'))
-
 @app.route('/upload-image', methods=['POST'])
-@login_required
 def upload_image():
     """Handles image upload and metadata generation."""
     file = request.files.get('image')
