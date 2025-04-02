@@ -6,7 +6,7 @@ steps:
       - "-c"
       - |
         gcloud secrets versions access latest --secret=app-env-file > ./.env
-        gcloud secrets versions access latest --secret=app-service-account > ./env.json
+        gcloud secrets versions access latest --secret=app-service-account > ./key.json
 
   # Determine if branch is blue or green
   - name: "gcr.io/cloud-builders/gcloud" # Using gcloud image instead of bash
