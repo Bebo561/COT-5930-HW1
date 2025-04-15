@@ -16,7 +16,7 @@ steps:
         "-t",
         "gcr.io/$PROJECT_ID/cloudcourseproject:$COMMIT_SHA",
         "-f",
-        "Dockerfile",
+        "/Dockerfile",
         "."
       ]
 
